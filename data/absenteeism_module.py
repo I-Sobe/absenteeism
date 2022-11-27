@@ -42,13 +42,13 @@ class absenteeism_model():
         def load_and_clean_data(self, data_file):
 
             # import the data
-            df = pd.read_csv(data_file,delimiter=',')
+            df = pd.read_csv(data_file, delimiter=',')
             # store the data in a new variable for later use
             self.df_with_predictions = df.copy()
             # drop the 'ID' column
             df = df.drop(['ID'], axis =1)
             # to preserve the code created in the previous section, add a column with 'NaN' strings
-            df['Absenteeism_Time_in_Hours'] = 'NaN'
+            # df['Absenteeism Time in Hours'] = 0
 
             # create a separate dataframe, containing dummy values for ALL available reasons
             reason_columns = pd.get_dummies(df['Reason for Absence'], drop_first = True)
@@ -65,20 +65,7 @@ class absenteeism_model():
             # concatenate df and the 4 types of reason for absence
             df = pd.concat([df, reason_type_1, reason_type_2, reason_type_3, reason_type_4], axis = 1)
 
-            # assigning names to the 4 columns
-            column_names = ['Date', 'Transportation Expense', 'Distance to Work','Age', 
-                            'Daily Work Load Average', 'Body Mass Index', 'Education', 'Children', 'Pets',
-                             'Absenteeism Time in Hours', 'Reason_1', 'Reason_2', 'Reason_3', 'Reason_4']
-            df.columns = column_names
-
-            # reordering the columns
-            column_names_reodered = ['Reason_1', 'Reason_2', 'Reason_3', 'Reason_4','Date', 'Transportation Expense',
-                                    'Distance to Work', 'Age', 'Daily Work Load Average', 'Body Mass Index',
-                                    'Education', 'Children', 'Pets', 'Absenteeism Time in Hours']
-            df.columns = column_names_reodered
-
-            # using timestamp to covert the datetime
-            df['Date'] = df['Date'].apply(pd.to_datetime, errors='coerce')
+            df['Date'] = pd.to_datetime(df['Date'], format='%d/%m/%Y')
 
             # Extracting the 'Year','Month' and 'day' from Date Column.
             df['Month'] = df['Date'].dt.month_name()
@@ -86,21 +73,26 @@ class absenteeism_model():
 
             # converting Month and Day columns to intergers, this will help in StandardScaler
             df['Month'] = df['Month'].replace(['January', 'February', 'March', 'April', 'May',
-            'June', 'July', 'August', 'September', 'October', 'November', 'December'], 
-            ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'])
+                                'June', 'July', 'August', 'September', 'October', 'November', 'December'], 
+                                ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'])
             df['Day'] = df['Day'].replace(['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'], 
-            ['1', '2', '3', '4', '5', '6', '7'])
+                                ['1', '2', '3', '4', '5', '6', '7'])
 
             # dropping the 'Date' Column
             df = df.drop(['Date'], axis = 1)
             
-            # rearrange the column
-            date_rearranged = ['Reason_1', 'Reason_2', 'Reason_3', 'Reason_4', 'Month',
-                                'Day','Transportation Expense', 'Distance to Work', 'Age',
-                                'Daily Work Load Average', 'Body Mass Index', 'Education',
-                                'Children', 'Pets', 'Absenteeism Time in Hours']
-            df.columns =date_rearranged
+            column_change = ['Transportation Expense', 'Distance to Work', 'Age', 'Daily Work Load Average', 'Body Mass Index', 
+            'Education', 'Children', 'Pets', 'Reason_1', 'Reason_2', 'Reason_3', 'Reason_4', 'Month', 'Day']
+            
+            df.columns = column_change
 
+            # reordering the columns
+            column_names_reodered = ['Reason_1', 'Reason_2', 'Reason_3', 'Reason_4', 'Month', 'Day', 'Transportation Expense',
+                        'Distance to Work', 'Age', 'Daily Work Load Average', 'Body Mass Index',
+                        'Education', 'Children', 'Pets']
+            df = df[column_names_reodered]
+                  
+           
             # using the 'map' method to reassign the values in the Education column
             df['Education'] = df['Education'].map({1:0, 2:1, 3:1, 4:1})
 
