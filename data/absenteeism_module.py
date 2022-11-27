@@ -29,7 +29,7 @@ class CustomScaler(BaseEstimator, TransformerMixin):
 
 
 # create the special class that we are going to use from here on to predict new data
-class absenteeism_mode():
+class absenteeism_model():
 
         def __init__(self, model_file, scaler_file):
             # read the 'model' and 'scaler'files which were saved
@@ -54,10 +54,10 @@ class absenteeism_mode():
             reason_columns = pd.get_dummies(df['Reason for Absence'], drop_first = True)
 
             # spilt reason_columns into 4 types
-            reason_type_1 = reason_columns.iloc[:, :14].max(axis=1)
-            reason_type_2 = reason_columns.iloc[:, 14:17].max(axis=1)
-            reason_type_3 = reason_columns.iloc[:, 17:20].max(axis=1)
-            reason_type_4 = reason_columns.iloc[:, 20:].max(axis=1)
+            reason_type_1 = reason_columns.loc[:, '1':'14'].max(axis=1)
+            reason_type_2 = reason_columns.loc[:, '15':'17'].max(axis=1)
+            reason_type_3 = reason_columns.loc[:, '18':'21'].max(axis=1)
+            reason_type_4 = reason_columns.loc[:, '22':].max(axis=1)
 
             # to avoid multicollinearity, drop the 'reason for absence' column from df
             df = df.drop(['Reason for Absence'], axis = 1)
@@ -66,23 +66,21 @@ class absenteeism_mode():
             df = pd.concat([df, reason_type_1, reason_type_2, reason_type_3, reason_type_4], axis = 1)
 
             # assigning names to the 4 columns
-            column_names = ['Reason for Absence', 'Date', 'Transportation Expense',
-                            'Distance to Work', 'Age', 'Daily Work Load Average',
-                            'Body Mass Index', 'Education', 'Children', 'Pets', 
-                            'Absenteeism Time in Hours', 'Reason_1', 'Reason_2', 'Reason_3', 'Reason_4']
+            column_names = ['Date', 'Transportation Expense', 'Distance to Work','Age', 
+                            'Daily Work Load Average', 'Body Mass Index', 'Education', 'Children', 'Pets',
+                             'Absenteeism Time in Hours', 'Reason_1', 'Reason_2', 'Reason_3', 'Reason_4']
             df.columns = column_names
 
             # reordering the columns
             column_names_reodered = ['Reason_1', 'Reason_2', 'Reason_3', 'Reason_4','Date', 'Transportation Expense',
                                     'Distance to Work', 'Age', 'Daily Work Load Average', 'Body Mass Index',
                                     'Education', 'Children', 'Pets', 'Absenteeism Time in Hours']
-            df = df[column_names_reodered]
+            df.columns = column_names_reodered
 
             # using timestamp to covert the datetime
-            df['Date'] = pd.to_datetime(df['Date'], format = '%d/%m/%Y')
+            df['Date'] = df['Date'].apply(pd.to_datetime, errors='coerce')
 
             # Extracting the 'Year','Month' and 'day' from Date Column.
-            df['Year'] = df['Date'].dt.year
             df['Month'] = df['Date'].dt.month_name()
             df['Day'] = df['Date'].dt.day_name()
 
@@ -97,11 +95,11 @@ class absenteeism_mode():
             df = df.drop(['Date'], axis = 1)
             
             # rearrange the column
-            date_rearranged = ['Reason_1', 'Reason_2', 'Reason_3', 'Reason_4', 'Year', 'Month',
+            date_rearranged = ['Reason_1', 'Reason_2', 'Reason_3', 'Reason_4', 'Month',
                                 'Day','Transportation Expense', 'Distance to Work', 'Age',
                                 'Daily Work Load Average', 'Body Mass Index', 'Education',
                                 'Children', 'Pets', 'Absenteeism Time in Hours']
-            df = df['date_rearranged']
+            df.columns =date_rearranged
 
             # using the 'map' method to reassign the values in the Education column
             df['Education'] = df['Education'].map({1:0, 2:1, 3:1, 4:1})
@@ -116,7 +114,7 @@ class absenteeism_mode():
             self.preprocessed_data = df.copy()
 
             # we need this line so we can use it in the next functions
-            self.data = self.scalar.transform(df)
+            self.data = self.scaler.transform(df)
 
         # a function which outputs the probability of a data point to be 1
         def predicted_probability(self):
