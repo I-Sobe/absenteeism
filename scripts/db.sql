@@ -16,7 +16,7 @@ CREATE TABLE predicted_outputs
     month INT NOT NULL,
     transportation_expense INT NOT NULL,
     age INT NOT NULL,
-    body_mass_index INT NOT NULL
+    body_mass_index INT NOT NULL,
     education BIT NOT NULL,
     children INT NOT NULL,
     pets INT NOT NULL,
