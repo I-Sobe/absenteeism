@@ -29,6 +29,7 @@ class CustomScaler(BaseEstimator, TransformerMixin):
 
 
 # create the special class that we are going to use from here on to predict new data
+# This is a modularization of the 'machine_learning.ipynb' and 'preprocessing.ipynb' files
 class absenteeism_model():
 
         def __init__(self, model_file, scaler_file):
